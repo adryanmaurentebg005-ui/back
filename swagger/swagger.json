@@ -1,0 +1,420 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "API e-commerce Chopee™",
+    "description": "API completa para gerenciamento de usuários, produtos e pedidos",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Suporte Chopee"
+    }
+  },
+  "host": "localhost:8999",
+  "basePath": "/",
+  "schemes": ["http"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "definitions": {
+    "UserCreate": {
+      "type": "object",
+      "required": ["name", "email", "password"],
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "password": { "type": "string" }
+      }
+    },
+    "UserUpdate": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "password": { "type": "string" }
+      }
+    },
+    "LoginBody": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": { "type": "string" },
+        "password": { "type": "string" }
+      }
+    },
+    "ItemCreate": {
+      "type": "object",
+      "required": ["user", "name", "price", "stock", "image"],
+      "properties": {
+        "user": { "type": "string", "description": "ObjectId do usuário dono do item" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "stock": { "type": "number" },
+        "description": { "type": "string" },
+        "image": { "type": "string" }
+      }
+    },
+    "ItemUpdate": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "stock": { "type": "number" },
+        "description": { "type": "string" },
+        "image": { "type": "string" }
+      }
+    },
+    "DeleteWithUserId": {
+      "type": "object",
+      "required": ["userId"],
+      "properties": {
+        "userId": { "type": "string", "description": "ObjectId do usuário dono do recurso" }
+      }
+    },
+    "OrderItemCreate": {
+      "type": "object",
+      "required": ["product", "quantity"],
+      "properties": {
+        "product": { "type": "string", "description": "ObjectId do item" },
+        "quantity": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "OrderCreate": {
+      "type": "object",
+      "required": ["orderName", "purchaser", "items"],
+      "properties": {
+        "orderName": { "type": "string" },
+        "purchaser": { "type": "string", "description": "ObjectId do comprador" },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/OrderItemCreate" }
+        }
+      }
+    },
+    "OrderStatusUpdate": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["Pending", "Confirmed", "Shipped", "Delivered", "Canceled"]
+        }
+      }
+    }
+  },
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Retorna todos os usuários",
+        "tags": ["Usuários"],
+        "responses": {
+          "200": { "description": "Lista de usuários" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "post": {
+        "summary": "Cria um novo usuário",
+        "tags": ["Usuários"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/UserCreate" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Usuário criado com sucesso" },
+          "400": { "description": "Dados inválidos ou email já existente" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "Retorna um usuário pelo ID",
+        "tags": ["Usuários"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Usuário encontrado" },
+          "404": { "description": "Usuário não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "put": {
+        "summary": "Atualiza um usuário",
+        "tags": ["Usuários"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": { "$ref": "#/definitions/UserUpdate" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Usuário atualizado com sucesso" },
+          "404": { "description": "Usuário não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "delete": {
+        "summary": "Deleta um usuário",
+        "tags": ["Usuários"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Usuário deletado com sucesso" },
+          "404": { "description": "Usuário não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Autentica um usuário",
+        "tags": ["Autenticação"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/LoginBody" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Login bem-sucedido" },
+          "400": { "description": "Email e senha são obrigatórios" },
+          "401": { "description": "Senha inválida" },
+          "404": { "description": "Usuário não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      }
+    },
+    "/items": {
+      "get": {
+        "summary": "Retorna todos os produtos",
+        "tags": ["Produtos"],
+        "responses": {
+          "200": { "description": "Lista de produtos" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "post": {
+        "summary": "Cria um novo produto",
+        "tags": ["Produtos"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/ItemCreate" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Produto criado com sucesso" },
+          "400": { "description": "Dados inválidos" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      }
+    },
+    "/items/{id}": {
+      "get": {
+        "summary": "Retorna um produto pelo ID",
+        "tags": ["Produtos"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Produto encontrado" },
+          "404": { "description": "Produto não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "put": {
+        "summary": "Atualiza um produto",
+        "tags": ["Produtos"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": { "$ref": "#/definitions/ItemUpdate" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Produto atualizado com sucesso" },
+          "404": { "description": "Produto não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "delete": {
+        "summary": "Deleta um produto",
+        "tags": ["Produtos"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/DeleteWithUserId" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Produto deletado com sucesso" },
+          "400": { "description": "userId ausente" },
+          "403": { "description": "Sem permissão para deletar item de outro usuário" },
+          "404": { "description": "Produto não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      }
+    },
+    "/orders": {
+      "get": {
+        "summary": "Retorna todos os pedidos (admin)",
+        "tags": ["Pedidos"],
+        "responses": {
+          "200": { "description": "Lista de pedidos" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "post": {
+        "summary": "Cria um novo pedido",
+        "tags": ["Pedidos"],
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/OrderCreate" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Pedido criado com sucesso" },
+          "400": { "description": "Dados inválidos, IDs inválidos, quantidade inválida ou estoque insuficiente" },
+          "404": { "description": "Item informado não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      }
+    },
+    "/orders/user/{userId}": {
+      "get": {
+        "summary": "Retorna pedidos de um usuário",
+        "tags": ["Pedidos"],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Lista de pedidos do usuário" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "summary": "Retorna um pedido pelo ID",
+        "tags": ["Pedidos"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Pedido encontrado" },
+          "404": { "description": "Pedido não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "put": {
+        "summary": "Atualiza o status de um pedido",
+        "tags": ["Pedidos"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/OrderStatusUpdate" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Pedido atualizado com sucesso" },
+          "400": { "description": "Status inválido" },
+          "404": { "description": "Pedido não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      },
+      "delete": {
+        "summary": "Deleta um pedido",
+        "tags": ["Pedidos"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/DeleteWithUserId" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Pedido deletado com sucesso" },
+          "400": { "description": "userId ausente" },
+          "403": { "description": "Sem permissão para deletar pedido de outro usuário" },
+          "404": { "description": "Pedido não encontrado" },
+          "500": { "description": "Erro interno do servidor" }
+        }
+      }
+    }
+  }
+}
+
+
+
