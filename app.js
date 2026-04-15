@@ -2,9 +2,9 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const connectDB = require("./config/db");
-const userRoutes = require("../Backend/routes/userRoute");
-const itemRoutes = require("../Backend/routes/itemRoute");
-const orderRoutes = require("../Backend/routes/orderRoute");
+const userRoutes = require("./routes/userRoute");
+const itemRoutes = require("./routes/itemRoute");
+const orderRoutes = require("./routes/orderRoute");
 const {
     getItems,
     getItemById,
@@ -30,7 +30,12 @@ app.use("/items", itemRoutes);
 app.use("/orders", orderRoutes);
 app.use("/", userRoutes);
 
-const PORT = process.env.PORT;
-app.listen(PORT, () => {
-    console.log(`Servidor rodando: http://localhost:${PORT}/api-docs`)
-})
+const PORT = process.env.PORT || 3000;
+
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Servidor rodando: http://localhost:${PORT}/api-docs`)
+    })
+}
+
+module.exports = app;
