@@ -21,6 +21,12 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+app.get('/health', (req, res) => {
+    res.status(200).json({ ok: true });
+});
+app.get('/', (req, res) => {
+    res.redirect('/api-docs');
+});
 app.get('/items', getItems);
 app.get('/items/:id', getItemById);
 app.post('/items', createItem);
