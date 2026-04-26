@@ -5,6 +5,9 @@ const { getItems, getItemById, createItem, deleteItem, itemEdit } = require('../
 router.get('/', getItems)
 router.get('/:id', getItemById)
 router.post('/', createItem)
+router.put('/:id', itemEdit)
+router.delete('/:id', deleteItem)
+
 router.post('/create', createItem)
 router.delete('/delete/:id', deleteItem)
 router.put('/edit/:id', itemEdit)

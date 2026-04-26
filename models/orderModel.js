@@ -13,6 +13,12 @@ const OrderSchema = new mongoose.Schema({
     required: true 
   },
 
+  author: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+
   items: [{
     product: {
       type: mongoose.Schema.Types.ObjectId, 
@@ -32,6 +38,23 @@ const OrderSchema = new mongoose.Schema({
   totalPrice: { 
     type: Number, 
     required: true 
+  },
+
+  coupon: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Coupon',
+    required: false,
+  },
+
+  discountAmount: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
+
+  finalPrice: {
+    type: Number,
+    required: true,
   },
 
   status: {

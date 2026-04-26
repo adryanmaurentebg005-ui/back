@@ -28,7 +28,7 @@ const getUserById = async (req, res) => {
 
 const createUser = async (req, res) => {
 
-    const { name, email, password} = req.body
+    const { name, email, password } = req.body
 
     if (!name || !email || !password) {
         const error = new Error("Preencha todos os campos ;)")
@@ -42,11 +42,22 @@ const createUser = async (req, res) => {
             return res.status(400).json({message: "Usuário já existe :(", error: error.message})
         }
         const hashPassword = await bcrypt.hash(password, 10)
-        const newUser = new User({name, email, password: hashPassword})
+        const newUser = new User({
+            name,
+            email,
+            password: hashPassword,
+        })
         
         await newUser.save()
 
-        res.status(201).json({message: "Usuário criado com sucesso"})
+        res.status(201).json({
+            message: "Usuário criado com sucesso",
+            user: {
+                _id: newUser._id,
+                name: newUser.name,
+                email: newUser.email,
+            },
+        })
 
     } catch (error) {
         console.log("Erro ao criar usuário, paia dmais :(", error)
@@ -91,6 +102,15 @@ const loginUser = async (req, res) => {
 
     const deleteUser = async (req, res) => {
         const { id } = req.params
+        const { userId } = req.body
+
+        if (!userId) {
+            return res.status(400).json({ message: "userId é obrigatório para deletar usuário" })
+        }
+
+        if (userId !== id) {
+            return res.status(403).json({ message: "Você só pode apagar sua própria conta" })
+        }
 
         try {
             const user = await User.findByIdAndDelete(id)
@@ -108,7 +128,15 @@ const loginUser = async (req, res) => {
 }
     const userEdit = async (req, res) => {
         const { id } = req.params
-        const { name, email, password } = req.body 
+        const { name, email, password, userId } = req.body 
+
+        if (!userId) {
+            return res.status(400).json({ message: "userId é obrigatório para editar usuário" })
+        }
+
+        if (userId !== id) {
+            return res.status(403).json({ message: "Você só pode editar sua própria conta" })
+        }
 
         try {
         const user = await User.findById(id)
@@ -130,7 +158,6 @@ const loginUser = async (req, res) => {
             const hashPassword = await bcrypt.hash(password, 10)
             user.password = hashPassword
         }
-
         await user.save()
         res.status(200).json({message: "Usuário editado com sucesso ;)"})
 

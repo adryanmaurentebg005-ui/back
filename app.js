@@ -5,13 +5,7 @@ const connectDB = require("./config/db");
 const userRoutes = require("./routes/userRoute");
 const itemRoutes = require("./routes/itemRoute");
 const orderRoutes = require("./routes/orderRoute");
-const {
-    getItems,
-    getItemById,
-    createItem,
-    deleteItem,
-    itemEdit,
-} = require("./controllers/itemController");
+const couponRoutes = require("./routes/couponRoute");
 const swaggerUI = require("swagger-ui-express");
 const swaggerDocument = require("./swagger/swagger.json");
 require('dotenv').config();
@@ -27,13 +21,9 @@ app.get('/health', (req, res) => {
 app.get('/', (req, res) => {
     res.redirect('/api-docs');
 });
-app.get('/items', getItems);
-app.get('/items/:id', getItemById);
-app.post('/items', createItem);
-app.put('/items/:id', itemEdit);
-app.delete('/items/:id', deleteItem);
 app.use("/items", itemRoutes);
 app.use("/orders", orderRoutes);
+app.use("/coupons", couponRoutes);
 app.use("/", userRoutes);
 
 const PORT = process.env.PORT || 3000;

@@ -5,7 +5,7 @@ const {
     getAllOrders,
     getOrderById,
     createOrder,
-    updateOrderStatus,
+    updateOrder,
     deleteOrder
 } = require('../controllers/orderController');
 
@@ -17,7 +17,7 @@ router.get('/:id', getOrderById);
 
 router.post('/', createOrder);
 
-router.put('/:id', updateOrderStatus);
+router.put('/:id', updateOrder);
 
 router.delete('/:id', deleteOrder);
 

@@ -81,12 +81,20 @@ const deleteItem = async (req, res) => {
 
 const itemEdit = async (req, res) => {
     const { id } = req.params;
-    const { name, price, stock, description, image } = req.body;
+    const { name, price, stock, description, image, userId } = req.body;
+
+    if (!userId) {
+        return res.status(400).json({ message: 'userId é obrigatório para editar item' });
+    }
 
     try {
         const item = await Item.findById(id);
         if (!item) {
             return res.status(404).json({ message: 'Item não encontrado :(' });
+        }
+
+        if (item.user.toString() !== userId) {
+            return res.status(403).json({ message: 'Você só pode editar seus próprios itens' });
         }
 
         if (name) item.name = name;
